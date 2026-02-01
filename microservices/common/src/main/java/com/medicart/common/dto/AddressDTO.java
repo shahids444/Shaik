@@ -12,12 +12,13 @@ import lombok.NoArgsConstructor;
 public class AddressDTO {
     private Long id;
     private String name;
-    private String phone;
+    private String streetAddress;
     private String addressLine1;
     private String addressLine2;
     private String city;
     private String state;
-    private String pincode;
-    private String label;
+    private String postalCode;
+    private String country;
+    private String phone;
     private Boolean isDefault;
 }

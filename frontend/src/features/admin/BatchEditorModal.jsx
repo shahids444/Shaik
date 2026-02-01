@@ -22,7 +22,7 @@ export default function BatchEditorModal({ batch, medicines, onClose, onSaved })
     if (batch && isEdit) {
       setForm({
         ...batch,
-        medicineId: batch.medicine?.id || "" 
+        medicineId: batch.medicineId || batch.medicine?.id || "" 
       });
     } else {
       setForm(EMPTY_BATCH);
@@ -42,9 +42,8 @@ export default function BatchEditorModal({ batch, medicines, onClose, onSaved })
         batchNo: form.batchNo,
         expiryDate: form.expiryDate,
         qtyAvailable: parseInt(form.qtyAvailable),
-        medicine: {
-          id: parseInt(form.medicineId)
-        }
+       medicineId: Number(form.medicineId)
+
       };
 
       if (isEdit) {

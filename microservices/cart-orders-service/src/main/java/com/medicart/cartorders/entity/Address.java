@@ -22,14 +22,16 @@ public class Address {
     private Long userId;
 
     @Column(nullable = false)
-    private String name;
+    @Builder.Default
+    private String name = "";
+    @Column(name = "street_address", nullable = false)
+    private String streetAddress;
 
-    @Column(nullable = false)
-    private String phone;
+    @Column(name = "address_line1", nullable = false)
+    @Builder.Default
+    private String addressLine1 = "";
 
-    @Column(nullable = false)
-    private String addressLine1;
-
+    @Column(name = "address_line2")
     private String addressLine2;
 
     @Column(nullable = false)
@@ -38,10 +40,15 @@ public class Address {
     @Column(nullable = false)
     private String state;
 
-    @Column(nullable = false)
-    private String pincode;
+    @Column(name = "postal_code", nullable = false)
+    private String postalCode;
 
-    private String label; // HOME, OFFICE, etc.
+    @Column(nullable = false)
+    @Builder.Default
+    private String country = "USA";
+
+    @Column(nullable = false)
+    private String phone;
 
     @Column(nullable = false)
     @Builder.Default

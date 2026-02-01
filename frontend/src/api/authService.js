@@ -12,7 +12,14 @@ export const authService = {
 
   // Register new user
   register: async (userData) => {
-    const response = await client.post("/auth/register", userData);
+    // send only the fields the backend expects to avoid unknown-property failures
+    const payload = {
+      email: userData.email?.trim() || "",
+      password: userData.password?.trim() || "",
+      fullName: userData.fullName?.trim() || "",
+      phone: String(userData.phone).trim() || "", // Ensure phone is a string
+    };
+    const response = await client.post("/auth/register", payload);
     return response.data;
   },
 

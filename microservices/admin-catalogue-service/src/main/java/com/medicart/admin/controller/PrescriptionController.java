@@ -9,7 +9,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/prescriptions")
-@CrossOrigin(origins = "*")
 public class PrescriptionController {
 
     @PostMapping("/upload")

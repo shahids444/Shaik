@@ -14,6 +14,7 @@ com\medicart\cartorders\repository\OrderRepository.class
 com\medicart\cartorders\entity\Order.class
 com\medicart\cartorders\entity\Address.class
 com\medicart\cartorders\controller\CartController.class
+com\medicart\cartorders\config\WebSecurityConfig.class
 com\medicart\cartorders\entity\CartItem.class
 com\medicart\cartorders\repository\CartItemRepository.class
 com\medicart\cartorders\repository\OrderItemRepository.class

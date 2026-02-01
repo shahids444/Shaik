@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import client from "../../api/client"; 
+import client from "../../api/client";
 import "./AdminLogin.css";
 
 const AdminLoginPage = () => {
@@ -15,39 +15,50 @@ const AdminLoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (loading) return; 
-    
+    if (loading) return;
+
     setLoading(true);
     setError("");
 
     try {
-      const response = await client.post("/api/auth/login", {
+      const response = await client.post("/auth/login", {
         email: formData.email.trim(),
         password: formData.password,
       });
 
-      const { token, roles } = response.data;
+      const { token, roles, userId } = response.data;
 
-      // backend returns ROLE_ADMIN as a string or array
-      if (token && String(roles).includes("ROLE_ADMIN")) {
-        // Clear old sessions
-        localStorage.clear();
-
-        // Save new credentials
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("userRole", "ROLE_ADMIN");
-
-        console.log("Login successful, moving to dashboard...");
-        
-        // Use replace: true to prevent back-button loops
-        navigate("/admin/dashboard", { replace: true });
-      } else {
-        setError("Unauthorized: Admin access required.");
-        setLoading(false);
+      if (!token) {
+        throw new Error("Token not received from server");
       }
+
+      // Normalize roles to array
+      const roleList = Array.isArray(roles) ? roles : [roles];
+
+      if (!roleList.includes("ROLE_ADMIN")) {
+        throw new Error("Admin access required");
+      }
+
+      // Clear old data
+      localStorage.clear();
+
+      // Store credentials
+      localStorage.setItem("accessToken", token);
+      localStorage.setItem("userRole", "ROLE_ADMIN");
+      if (userId) {
+        localStorage.setItem("userId", String(userId));
+      }
+
+      console.log("✅ Admin login successful");
+      navigate("/admin/dashboard", { replace: true });
+
     } catch (err) {
-      console.error("Login Error:", err);
-      setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+      console.error("❌ Admin Login Error:", err);
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Invalid admin credentials"
+      );
       setLoading(false);
     }
   };
@@ -60,31 +71,37 @@ const AdminLoginPage = () => {
           <p>Administration Portal</p>
         </div>
 
-        {error && <div className="error-alert" style={{color: 'red', marginBottom: '15px'}}>{error}</div>}
+        {error && (
+          <div className="error-alert" style={{ color: "red", marginBottom: "15px" }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label>Email Address</label>
-            <input 
-              type="email" 
-              name="email" 
-              value={formData.email} 
-              onChange={handleChange} 
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="admin@medicart.com"
-              required 
+              required
             />
           </div>
+
           <div className="form-group">
             <label>Password</label>
-            <input 
-              type="password" 
-              name="password" 
-              value={formData.password} 
-              onChange={handleChange} 
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               placeholder="••••••••"
-              required 
+              required
             />
           </div>
+
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? "Verifying..." : "Login to Dashboard"}
           </button>

@@ -19,7 +19,7 @@ export default function BatchTable({ batches, onEdit, onDelete }) {
   // ✅ 1. Filter the batches based on search term
   const filteredBatches = batchList.filter((b) => {
     const term = searchTerm.toLowerCase();
-    const medicineName = b.medicine?.name?.toLowerCase() || "";
+    const medicineName = b.medicineName?.toLowerCase() || "";
     const batchNo = b.batchNo?.toLowerCase() || "";
     
     return medicineName.includes(term) || batchNo.includes(term);
@@ -85,7 +85,7 @@ export default function BatchTable({ batches, onEdit, onDelete }) {
             {selectedBatches.length > 0 ? (
               selectedBatches.map((b) => (
                 <tr key={b.id}>
-                  <td style={{ fontWeight: 600 }}>{b.medicine?.name || "Unknown Medicine"}</td>
+                  <td style={{ fontWeight: 600 }}>{b.medicineName || "Unknown Medicine"}</td>
                   <td>{b.batchNo}</td>
                   <td>{b.expiryDate}</td>
                   <td>{b.qtyAvailable}</td>

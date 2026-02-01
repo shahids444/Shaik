@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/seed")
-@CrossOrigin(origins = "*")
 public class SeedController {
 
     @PostMapping("/medicines")

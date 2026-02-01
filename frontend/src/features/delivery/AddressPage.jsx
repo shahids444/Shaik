@@ -46,15 +46,20 @@ const AddressPage = () => {
 
   const handleSave = async (payload) => {
     try {
+      console.log("📍 Address payload being sent:", payload);
       if (editing) {
+        console.log("📝 Updating address ID:", editing);
         await addressService.updateAddress(editing, payload);
       } else {
+        console.log("➕ Creating new address");
         await addressService.createAddress(payload);
       }
+      console.log("✅ Address saved successfully");
       setEditing(null);
       fetchAddresses();
     } catch (err) {
-      alert("Save failed");
+      console.error("❌ Save failed:", err.response?.data || err.message);
+      alert("Save failed: " + (err.response?.data?.message || err.message));
     }
   };
 

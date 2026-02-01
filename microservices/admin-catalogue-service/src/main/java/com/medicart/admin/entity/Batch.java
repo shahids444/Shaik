@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "batches", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"medicine_id", "batch_no"})
+    @UniqueConstraint(columnNames = {"medicine_id", "batch_number"})
 })
 @Data
 @NoArgsConstructor
@@ -25,15 +25,24 @@ public class Batch {
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
 
-    @Column(nullable = false)
-    private String batchNo;
+    @Column(name = "batch_number", nullable = false)
+    @Builder.Default
+    private String batchNo = "";  
 
     @Column(nullable = false)
     private LocalDate expiryDate;
 
-    @Column(nullable = false)
+    @Column(name = "quantity_available", nullable = false)
     @Builder.Default
     private Integer qtyAvailable = 0;
+
+    @Column(name = "quantity_total", nullable = false)
+    @Builder.Default
+    private Integer qtyTotal = 0;
+
+    @Column(name = "selling_price", nullable = false)
+    @Builder.Default
+    private Double sellingPrice = 0.0;
 
     @Version
     private Long version;

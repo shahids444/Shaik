@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MdOutlineUploadFile } from "react-icons/md";
 import client from "../../../api/client";
+import logger from "../../../utils/logger";
 
 const Prescription = () => {
 
@@ -10,6 +11,8 @@ const Prescription = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    logger.info("📝 Prescription component mounted");
+    
     const limit = 1024 * 1024 * 5 // 5 mb limit
     if (prescription?.size > limit) {
       alert("File size greater than 5mb not allowed")
@@ -20,10 +23,12 @@ const Prescription = () => {
     const loadHistory = async () => {
       try {
         setLoading(true)
+        logger.info("📋 Loading prescription history...");
         const res = await client.get('/api/prescriptions')
+        logger.info("✅ Prescription history loaded", { count: res.data?.length || 0 });
         setHistory(res.data || [])
       } catch (err) {
-        console.error('Failed to load prescriptions', err)
+        logger.error('Failed to load prescriptions', err.response?.data || err.message);
         setError(err?.response?.data?.message || 'Failed to load prescriptions')
       } finally {
         setLoading(false)
@@ -44,17 +49,24 @@ const Prescription = () => {
     if (!prescription) return
     try {
       setLoading(true)
+      logger.info("📤 Starting prescription upload", { fileName: prescription.name, size: prescription.size });
+      
       const fd = new FormData()
       fd.append('file', prescription)
-      const res = await client.post('/api/prescriptions', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      
+      const res = await client.post('/api/prescriptions', fd)
+      logger.info("✅ Prescription uploaded successfully", { fileName: prescription.name });
+      
       // refresh list
       const list = await client.get('/api/prescriptions')
       setHistory(list.data || [])
       setPrescription()
     } catch (err) {
-      console.error('Upload failed', err)
+      logger.error('Upload failed', {
+        status: err.response?.status,
+        message: err.message,
+        data: err.response?.data
+      });
       setError(err?.response?.data?.message || 'Upload failed')
     } finally {
       setLoading(false)

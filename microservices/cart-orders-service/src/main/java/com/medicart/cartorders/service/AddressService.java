@@ -30,14 +30,15 @@ public class AddressService {
 
         Address address = Address.builder()
                 .userId(userId)
-                .name(addressDTO.getName())
-                .phone(addressDTO.getPhone())
-                .addressLine1(addressDTO.getAddressLine1())
+            .name(addressDTO.getName() != null ? addressDTO.getName() : "")
+                .streetAddress(addressDTO.getStreetAddress())
+                .addressLine1(addressDTO.getAddressLine1() != null ? addressDTO.getAddressLine1() : "")
                 .addressLine2(addressDTO.getAddressLine2())
                 .city(addressDTO.getCity())
                 .state(addressDTO.getState())
-                .pincode(addressDTO.getPincode())
-                .label(addressDTO.getLabel())
+                .postalCode(addressDTO.getPostalCode())
+                .country(addressDTO.getCountry() != null ? addressDTO.getCountry() : "USA")
+                .phone(addressDTO.getPhone())
                 .isDefault(addressDTO.getIsDefault() != null ? addressDTO.getIsDefault() : false)
                 .build();
 
@@ -89,14 +90,15 @@ public class AddressService {
                     });
         }
 
-        address.setName(addressDTO.getName());
-        address.setPhone(addressDTO.getPhone());
-        address.setAddressLine1(addressDTO.getAddressLine1());
+        address.setStreetAddress(addressDTO.getStreetAddress());
+        address.setName(addressDTO.getName() != null ? addressDTO.getName() : "");
+        address.setAddressLine1(addressDTO.getAddressLine1() != null ? addressDTO.getAddressLine1() : "");
         address.setAddressLine2(addressDTO.getAddressLine2());
         address.setCity(addressDTO.getCity());
         address.setState(addressDTO.getState());
-        address.setPincode(addressDTO.getPincode());
-        address.setLabel(addressDTO.getLabel());
+        address.setPostalCode(addressDTO.getPostalCode());
+        address.setCountry(addressDTO.getCountry() != null ? addressDTO.getCountry() : "USA");
+        address.setPhone(addressDTO.getPhone());
         address.setIsDefault(addressDTO.getIsDefault());
 
         address = addressRepository.save(address);
@@ -121,13 +123,14 @@ public class AddressService {
         return AddressDTO.builder()
                 .id(address.getId())
                 .name(address.getName())
-                .phone(address.getPhone())
+                .streetAddress(address.getStreetAddress())
                 .addressLine1(address.getAddressLine1())
                 .addressLine2(address.getAddressLine2())
                 .city(address.getCity())
                 .state(address.getState())
-                .pincode(address.getPincode())
-                .label(address.getLabel())
+                .postalCode(address.getPostalCode())
+                .country(address.getCountry())
+                .phone(address.getPhone())
                 .isDefault(address.getIsDefault())
                 .build();
     }

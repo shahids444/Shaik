@@ -32,6 +32,10 @@ public class CartItem {
     @Column(nullable = false)
     private Double price;
 
+    @Column(name = "unit_price", nullable = false)
+    @Builder.Default
+    private Double unitPrice = 0.0;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean inStock = true;

@@ -39,7 +39,12 @@ const OTPPage = () => {
             setCanResend(false);
             setTimer(30); // Reset timer
             setError(null);
-            await client.post("/api/auth/send-otp", { email: userData.email });
+            const response = await client.post("/auth/otp/send", { email: userData.email });
+            
+            // Show demo OTP in alert (for evaluation purposes - mocked email service)
+            if (response.data.demoOtp) {
+                alert(`📧 OTP for Demo Purposes:\n\n${response.data.demoOtp}\n\nNote: Email service is mocked - OTP shown here for evaluation.\nIn production, OTP would be sent via email.`);
+            }
         } catch (err) {
             setError("Failed to resend OTP. Please try again.");
             setCanResend(true);
@@ -61,7 +66,7 @@ const handleVerify = async (e) => {
 
     // Send OTP verification request - IMPORTANT: Don't use client interceptor here
     // because we don't have a token yet
-    const res = await client.post("/api/auth/verify-otp", { 
+    const res = await client.post("/auth/otp/verify", { 
       email: userData?.email,
       otp: otp,
       fullName: userData?.fullName,

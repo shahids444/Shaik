@@ -1,5 +1,6 @@
 package com.medicart.gateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -12,23 +13,22 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.WebFilter;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
 
+    @Value("${jwt.secret:your-secret-key-min-256-bits-long-for-hs256-algorithm-medicart-2025}")
+    private String jwtSecret;
+
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Using HS256 with the same secret used in auth service
-        // In production, use OAuth2 token introspection endpoint instead
-        return NimbusJwtDecoder.withSecretKey(
-                javax.crypto.spec.SecretKeySpec.class.cast(
-                        new javax.crypto.spec.SecretKeySpec(
-                                "your-secret-key-min-256-bits-long-for-hs256-algorithm-medicart".getBytes(),
-                                "HmacSHA256"
-                        )
-                )
-        ).build();
+        // Using HmacSHA512 with the same secret as auth and resource services
+        byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        SecretKeySpec key = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
+        return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
     /**

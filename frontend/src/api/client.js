@@ -1,4 +1,29 @@
 import axios from "axios";
+import logger from "../utils/logger";
+
+// Utility to decode JWT and extract user ID
+const extractUserIdFromToken = (token) => {
+  try {
+    if (!token) return null;
+    // Remove 'Bearer ' prefix if present
+    const cleanToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+    // Decode JWT payload
+    const base64Url = cleanToken.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    // Prefer explicit numeric fields, fall back to sub if numeric
+    if (payload.userId) return payload.userId;
+    if (payload.id) return payload.id;
+    if (payload.sub && !isNaN(Number(payload.sub))) return Number(payload.sub);
+    return null;
+  } catch (e) {
+    logger.error("Failed to extract user ID from token", e);
+    return null;
+  }
+};
 
 // API Gateway is on port 8080, which routes to microservices
 const client = axios.create({
@@ -8,31 +33,56 @@ const client = axios.create({
   },
 });
 
-// REQUEST INTERCEPTOR - Add token to every request
+// REQUEST INTERCEPTOR - Add token and user ID to every request
 client.interceptors.request.use((config) => {
   try {
     const token = localStorage.getItem("accessToken");
     
-    // Only add Authorization header if token exists and is valid
+    // Add Authorization header if token exists
     if (token && token !== "null" && token !== "undefined" && token.trim() !== "") {
-      // Ensure token has "Bearer " prefix
       config.headers.Authorization = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-      console.log("🔐 Token added to request:", config.url);
+      logger.info("🔐 Token added to request", { url: config.url });
+      
+      // Extract and add user ID from token
+      let userId = extractUserIdFromToken(token);
+      // Fallback to stored userId (set at login) if token payload doesn't include it
+      if (!userId) {
+        const stored = localStorage.getItem("userId");
+        if (stored && stored !== "null" && stored !== "undefined") {
+          userId = Number(stored);
+        }
+      }
+      if (userId) {
+        // Ensure header is string
+        config.headers["X-User-Id"] = String(userId);
+        logger.info("👤 User ID added to request", { userId, url: config.url });
+      }
     } else {
-      // No token, remove Authorization header
       delete config.headers.Authorization;
+      delete config.headers["X-User-Id"];
     }
   } catch (e) {
-    console.error("❌ Token error in request interceptor:", e);
+    logger.error("Request interceptor error", e);
     delete config.headers.Authorization;
+    delete config.headers["X-User-Id"];
   }
+  
+  // For FormData (file uploads), don't set Content-Type - let axios set multipart/form-data
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+    logger.info("📁 FormData detected - Content-Type will be set by axios", { url: config.url });
+  }
+  
+  // LOG REQUEST DETAILS
+  logger.logApiRequest(config.method.toUpperCase(), config.url, config.headers, config.data);
+  
   return config;
 });
 
 // RESPONSE INTERCEPTOR - Handle 401 and token refresh
 client.interceptors.response.use(
   (res) => {
-    console.log("✅ Response received:", res.status, res.config.url);
+    logger.logApiResponse(res.config.method.toUpperCase(), res.config.url, res.status, res.data);
     return res;
   },
   (err) => {
@@ -45,14 +95,24 @@ client.interceptors.response.use(
     if (err.response && err.response.status === 401) {
       // Only warn if user had a token and it's a protected route
       if (token && token !== "null" && !isPublicRoute) {
-        console.warn("⚠️ Session expired - 401 Unauthorized on:", err.config.url);
-        
-        // Optional: Clear token and redirect to login
-        // localStorage.removeItem("accessToken");
-        // localStorage.removeItem("userRole");
-        // window.location.href = "/auth/login";
+        logger.warn("Session expired - 401 Unauthorized", { url: err.config.url });
       }
     }
+    
+    if (err.response && err.response.status === 403) {
+      logger.error("Access Forbidden - 403", { 
+        url: err.config.url, 
+        headers: err.config.headers,
+        status: err.response.status 
+      });
+    }
+
+    logger.logApiError(
+      err.config.method.toUpperCase(),
+      err.config.url,
+      err.response?.status || "UNKNOWN",
+      err
+    );
     
     return Promise.reject(err);
   }

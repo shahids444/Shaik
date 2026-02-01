@@ -48,6 +48,7 @@ const cartSlice = createSlice({
     // ✅ This allows manual updates from components (like Checkout refresh)
     setCart(state, action) {
       state.items = action.payload.map(item => ({
+        id: item.id,
         product: item.medicine,
         qty: item.quantity
       }));
@@ -64,7 +65,9 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         // Map backend CartItem (medicine, quantity) to frontend format (product, qty)
+        // Include id for update/delete operations
         state.items = action.payload.map(item => ({
+          id: item.id,
           product: item.medicine,
           qty: item.quantity
         }));

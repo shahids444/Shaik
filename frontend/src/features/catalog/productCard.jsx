@@ -3,11 +3,26 @@ import { FaInfoCircle, FaCartPlus, FaPlus, FaMinus, FaCheckCircle } from "react-
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; // 1. Add this
 import { addToCart, incrementQty, decrementQty } from "../../components/cart/cartSlice";
+import logger from "../../utils/logger";
 import "./product-card.css";
 
 export default function ProductCard({ product, onViewMore }) {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // 2. Initialize navigate
+
+  // LOG PRODUCT DATA RECEIVED
+  if (product) {
+    logger.debug("📦 ProductCard received product", {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      stockStatus: product.stockStatus,
+      inStock: product.inStock,
+      totalQuantity: product.totalQuantity,
+      batches: product.batches ? product.batches.length : 0,
+      category: product.category
+    });
+  }
 
   const cartItem = useSelector((state) =>
     state.cart.items.find((i) => i.product.id === product.id)
@@ -16,8 +31,26 @@ export default function ProductCard({ product, onViewMore }) {
   const categoryKey = product.category?.trim();
   const Icon = MEDICINE_ICONS[categoryKey] || MEDICINE_ICONS.Tablet;
 
-  const canBuy = product.inStock && product.totalQuantity > 0;
-  const isLimitReached = cartItem ? cartItem.qty >= product.totalQuantity : false;
+  // Stock status determination logic
+  // The API returns: stockStatus (IN_STOCK/OUT_OF_STOCK/EXPIRED), totalQuantity, inStock flag
+  // Priority: 1) Check stockStatus field from backend, 2) Fallback to quantity checks
+  const isStockStatusInStock = product.stockStatus === "IN_STOCK";
+  const hasQuantity = product.totalQuantity > 0;
+  const canBuy = isStockStatusInStock || hasQuantity;
+  
+  const isLimitReached = cartItem ? cartItem.qty >= (product.totalQuantity || 0) : false;
+
+  logger.debug("📊 ProductCard stock determination", {
+    productId: product.id,
+    productName: product.name,
+    stockStatusFromAPI: product.stockStatus,
+    totalQuantity: product.totalQuantity,
+    inStockFlag: product.inStock,
+    isStockStatusInStock,
+    hasQuantity,
+    canBuy,
+    decision: canBuy ? "✅ SHOW BUY BUTTON" : "❌ SHOW OUT OF STOCK"
+  });
 
   // 3. Auth Check Wrapper
   const handleProtectedAction = (actionFn) => {

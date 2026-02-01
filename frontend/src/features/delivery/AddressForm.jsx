@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react';
 
 const initial = {
   name: '',
-  phone: '',
+  streetAddress: '',
   addressLine1: '',
   addressLine2: '',
+  phone: '',
   city: '',
   state: '',
-  pincode: '',
-  label: 'Home',
+  postalCode: '',
+  country: 'USA',
   isDefault: false,
 };
 
@@ -25,11 +26,12 @@ const initial = {
   const validate = () => {
     const e = {};
     if (!form.name.trim()) e.name = 'Full name is required';
-    if (!/^\d{10}$/.test(form.phone)) e.phone = 'Phone must be 10 digits';
+    if (!form.streetAddress.trim()) e.streetAddress = 'Street address is required';
     if (!form.addressLine1.trim()) e.addressLine1 = 'Address line 1 is required';
+    if (!/^\d{10}$/.test(form.phone)) e.phone = 'Phone must be 10 digits';
     if (!form.city.trim()) e.city = 'City is required';
     if (!form.state.trim()) e.state = 'State is required';
-    if (!/^\d{6}$/.test(form.pincode)) e.pincode = 'PIN code must be 6 digits';
+    if (!/^\d{6}$/.test(form.postalCode)) e.postalCode = 'PIN code must be 6 digits';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -49,7 +51,7 @@ const initial = {
 
   return (
     <form onSubmit={handleSubmit} style={styles.form} noValidate>
-      {/* Name & Phone */}
+      {/* Name, Street Address & Phone */}
       <div style={styles.row}>
         <div style={styles.field}>
           <label htmlFor="name" style={styles.label}>Full Name</label>
@@ -58,11 +60,24 @@ const initial = {
             type="text"
             value={form.name}
             onChange={e => handleChange('name', e.target.value)}
-            placeholder="e.g., Vedansh Agarwal"
+            placeholder="e.g., Shahid"
             autoComplete="name"
             style={styles.input}
           />
           {errors.name && <span style={styles.error}>{errors.name}</span>}
+        </div>
+        <div style={styles.field}>
+          <label htmlFor="streetAddress" style={styles.label}>Street Address</label>
+          <input
+            id="streetAddress"
+            type="text"
+            value={form.streetAddress}
+            onChange={e => handleChange('streetAddress', e.target.value)}
+            placeholder="House no., street name"
+            autoComplete="street-address"
+            style={styles.input}
+          />
+          {errors.streetAddress && <span style={styles.error}>{errors.streetAddress}</span>}
         </div>
         <div style={styles.field}>
           <label htmlFor="phone" style={styles.label}>Phone</label>
@@ -79,35 +94,36 @@ const initial = {
         </div>
       </div>
 
-      {/* Address Lines */}
-      <div style={styles.field}>
-        <label htmlFor="addressLine1" style={styles.label}>Address Line 1</label>
-        <input
-          id="addressLine1"
-          type="text"
-          value={form.addressLine1}
-          onChange={e => handleChange('addressLine1', e.target.value)}
-          placeholder="House no., street"
-          autoComplete="address-line1"
-          style={styles.input}
-        />
-        {errors.addressLine1 && <span style={styles.error}>{errors.addressLine1}</span>}
+      {/* Address Line 1 & 2 */}
+      <div style={styles.row}>
+        <div style={styles.field}>
+          <label htmlFor="addressLine1" style={styles.label}>Address Line 1</label>
+          <input
+            id="addressLine1"
+            type="text"
+            value={form.addressLine1}
+            onChange={e => handleChange('addressLine1', e.target.value)}
+            placeholder="Apartment, suite, etc."
+            autoComplete="address-line1"
+            style={styles.input}
+          />
+          {errors.addressLine1 && <span style={styles.error}>{errors.addressLine1}</span>}
+        </div>
+        <div style={styles.field}>
+          <label htmlFor="addressLine2" style={styles.label}>Address Line 2 (optional)</label>
+          <input
+            id="addressLine2"
+            type="text"
+            value={form.addressLine2}
+            onChange={e => handleChange('addressLine2', e.target.value)}
+            placeholder="Area, landmark"
+            autoComplete="address-line2"
+            style={styles.input}
+          />
+        </div>
       </div>
 
-      <div style={styles.field}>
-        <label htmlFor="addressLine2" style={styles.label}>Address Line 2 (optional)</label>
-        <input
-          id="addressLine2"
-          type="text"
-          value={form.addressLine2}
-          onChange={e => handleChange('addressLine2', e.target.value)}
-          placeholder="Area, landmark"
-          autoComplete="address-line2"
-          style={styles.input}
-        />
-      </div>
-
-      {/* City, State, PIN */}
+      {/* City, State, Postal Code */}
       <div style={styles.row}>
         <div style={styles.field}>
           <label htmlFor="city" style={styles.label}>City</label>
@@ -136,39 +152,34 @@ const initial = {
           {errors.state && <span style={styles.error}>{errors.state}</span>}
         </div>
         <div style={styles.field}>
-          <label htmlFor="pincode" style={styles.label}>PIN Code</label>
+          <label htmlFor="postalCode" style={styles.label}>PIN Code</label>
           <input
-            id="pincode"
+            id="postalCode"
             type="text"
             inputMode="numeric"
-            value={form.pincode}
-            onChange={e => handleChange('pincode', e.target.value)}
+            value={form.postalCode}
+            onChange={e => handleChange('postalCode', e.target.value)}
             placeholder="6 digits"
             autoComplete="postal-code"
             style={styles.input}
           />
-          {errors.pincode && <span style={styles.error}>{errors.pincode}</span>}
+          {errors.postalCode && <span style={styles.error}>{errors.postalCode}</span>}
         </div>
       </div>
 
-      {/* Label radio + default checkbox */}
+      {/* Country & Default */}
       <div style={styles.row}>
         <div style={styles.field}>
-          <span style={styles.label}>Label</span>
-          <div style={styles.radioGroup} role="radiogroup" aria-label="Address label">
-            {['Home', 'Work', 'Other'].map(lbl => (
-              <label key={lbl} style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="label"
-                  value={lbl}
-                  checked={form.label === lbl}
-                  onChange={e => handleChange('label', e.target.value)}
-                />
-                {lbl}
-              </label>
-            ))}
-          </div>
+          <label htmlFor="country" style={styles.label}>Country</label>
+          <input
+            id="country"
+            type="text"
+            value={form.country}
+            onChange={e => handleChange('country', e.target.value)}
+            placeholder="e.g., USA"
+            autoComplete="country"
+            style={styles.input}
+          />
         </div>
         <div style={{ ...styles.field, justifyContent: 'flex-end' }}>
           <label htmlFor="isDefault" style={styles.checkboxLabel}>
